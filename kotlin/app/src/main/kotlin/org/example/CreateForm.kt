@@ -58,10 +58,6 @@ class CreateForm(
             "workspace": {
                 "href": "https://api.typeform.com/workspaces/${workspace}"
             },
-            "hidden": ["respondent"],
-            "theme": {
-                "href": "https://api.typeform.com/themes/dV4jhPMk"
-            },
             "settings": {
                 "language": "en",
                 "progress_bar": "proportion",
@@ -114,7 +110,7 @@ class CreateForm(
             ],
             "fields": [
                 {
-                    "title": "Which superhero is your favourite?",
+                    "title": "Who is your favourite superhero?",
                     "ref": "question-1",
                     "properties": {
                         "randomize": true,
