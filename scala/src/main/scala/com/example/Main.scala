@@ -9,6 +9,8 @@ object Main extends App {
   implicit val system: ActorSystem = ActorSystem()
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
+  import system.dispatcher
+
   CreateForm(
     typeformBaseUrl = "https://api.typeform.com",
     typeformAccessToken = "YOUR_ACCESS_TOKEN",
