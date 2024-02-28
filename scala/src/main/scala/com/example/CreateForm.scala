@@ -1,11 +1,11 @@
 package com.example
 
 import akka.http.scaladsl.HttpExt
-import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.stream.ActorMaterializer
 
-import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 import scala.util.Try
 
@@ -16,29 +16,27 @@ case class CreateForm(
                        private val httpClient: HttpExt
                      ) {
 
-  def execute(implicit actorMaterializer: ActorMaterializer): Either[CreateFormFailure, String] =
+  def execute(implicit actorMaterializer: ActorMaterializer, executionContext: ExecutionContext): Either[CreateFormFailure, String] =
     for {
       uri <- buildUrl(s"$typeformBaseUrl/forms")
       response <- httpPost(uri)
       formId <- processResponse(response)
     } yield formId
 
-  private def processResponse(response: HttpResponse)(implicit actorMaterializer: ActorMaterializer): Either[CreateFormFailure, String] = {
+  private def processResponse(response: HttpResponse)(implicit actorMaterializer: ActorMaterializer, executionContext: ExecutionContext): Either[CreateFormFailure, String] = {
     val statusCode: Int = response.status.intValue()
     if (statusCode == 201) {
-      response.headers.find(_.name() == "location") match {
+      response.discardEntityBytes()
+      response.headers.find(_.name() == "Location") match {
         case Some(location) => Right(extractId(location.value()))
         case None => Left(CreateFormFailure.LocationHeaderNotPresent)
       }
     } else {
-      Left(CreateFormFailure.ErrorResponse(
-        statusCode,
-        response
-          .entity
-          .toStrict(2 seconds)
-          .toTry
-          .toOption
-          .map(_.data.utf8String))
+      Left(
+        CreateFormFailure.ErrorResponse(
+          statusCode,
+          response.entity.dataBytes.runReduce(_ ++ _).map(_.toString).toTry.toOption
+        )
       )
     }
   }
