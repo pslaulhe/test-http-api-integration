@@ -13,8 +13,8 @@ object Main extends App {
 
   CreateForm(
     typeformBaseUrl = "https://api.typeform.com",
-    typeformAccessToken = "tfp_4SYFGY24QRrZB5sv57wRxLJp1sy1X18Qozs61oQeq7u7_3mLLFWD3buGz9C",
-    typeformWorkspace = "jqY3ZM",
+    typeformAccessToken = "YOUR_ACCESS_TOKEN",
+    typeformWorkspace = "WORKSPACE_ID",
     httpClient = Http()
   ).execute match {
     case Left(createFormFailure) => println(createFormFailure)
