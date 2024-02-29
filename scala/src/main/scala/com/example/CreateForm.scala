@@ -28,21 +28,20 @@ case class CreateForm(
     if (statusCode == 201) {
       response.discardEntityBytes()
       response.headers.find(_.name() == "Location") match {
-        case Some(location) => Right(extractId(location.value()))
-        case None => Left(CreateFormFailure.LocationHeaderNotPresent)
+        case Some(location) => extractId(location.value()).right()
+        case None => CreateFormFailure.LocationHeaderNotPresent.left()
       }
     } else {
-      Left(
-        CreateFormFailure.ErrorResponse(
-          statusCode,
-          response.entity.dataBytes.runReduce(_ ++ _).map(_.toString).toTry.toOption
-        )
-      )
+      CreateFormFailure.ErrorResponse(
+        statusCode,
+        response.entity.dataBytes.runReduce(_ ++ _).map(_.toString).toTry.toOption
+      ).left()
     }
   }
 
   private def extractId(text: String): String = text.split("/").last
 
+  //noinspection SameParameterValue
   private def buildUrl(uri: String): Either[CreateFormFailure, Uri] =
     Try(Uri(uri)).toEitherA[CreateFormFailure](_ => CreateFormFailure.InvalidUrl)
 
